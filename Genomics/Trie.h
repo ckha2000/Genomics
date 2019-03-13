@@ -16,7 +16,7 @@ public:
     void insert(const std::string& key, const ValueType& value);
     std::vector<ValueType> find(const std::string& key, bool exactMatchOnly) const;
 
-    void dump();                    // remember to comment out
+//    void dump();                    // remember to comment out
     
       // C++11 syntax for preventing copying and assignment
     Trie(const Trie&) = delete;
@@ -31,9 +31,9 @@ private:
     Node* m_root;
     void deleteTrie(Node* n);
     bool insertHelper(const char key[], const ValueType& value, Node* curr);
-    std::vector<ValueType> findHelper(const char key[], bool exactMatchOnly, std::vector<ValueType> matches, Node* curr);
+    std::vector<ValueType> findHelper(const char key[], bool exactMatchOnly, std::vector<ValueType>& matches, Node* curr) const;
     
-    void toilet(Node* n);
+//    void toilet(Node* n);
 };
 
 template<typename ValueType>
@@ -98,12 +98,20 @@ bool Trie<ValueType>::insertHelper(const char key[], const ValueType& value, Nod
 template<typename ValueType>
 std::vector<ValueType> Trie<ValueType>::find(const std::string& key, bool exactMatchOnly) const{
     std::vector<ValueType> matches;
-    findHelper(key, exactMatchOnly, matches);
+    Node* curr = m_root;
+    
+    // check that the first char is a match, regardless of exact matches
+    for(int i = 0; i < curr->children.size(); i++){
+        if(curr->children[i] != nullptr && curr->children[i]->label == key[0]){
+            return findHelper(key.c_str(), exactMatchOnly, matches, curr->children[i]);
+        }
+    }
+    // if there are no matching first chars, return an empty vector
     return matches;
 }
 
 template<typename ValueType>
-std::vector<ValueType> Trie<ValueType>::findHelper(const char key[], bool exactMatchOnly, std::vector<ValueType> matches, Node* curr){
+std::vector<ValueType> Trie<ValueType>::findHelper(const char key[], bool exactMatchOnly, std::vector<ValueType>& matches, Node* curr) const{
     
     // base case: key is empty, return immediately
     if(key[0] == '\0')
@@ -132,17 +140,17 @@ std::vector<ValueType> Trie<ValueType>::findHelper(const char key[], bool exactM
             findHelper(key+1, false, matches, curr->children[i]);
         }
     }
+    return matches;
 }
 
 
 
 //////////////////////////////////
-
+/*
 template<typename ValueType>
 void Trie<ValueType>::dump(){
     toilet(m_root);
 }
-
 
 template<typename ValueType>
 void Trie<ValueType>::toilet(Node* n){
@@ -157,5 +165,5 @@ void Trie<ValueType>::toilet(Node* n){
         toilet(n->children[i]);
     }
 }
-
+*/
 #endif // TRIE_INCLUDED

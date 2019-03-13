@@ -321,13 +321,20 @@ int main(){
     Trie<int> t;
     t.insert("ABG", 12);
     t.insert("ABC", 14);
-    t.dump();
+//    t.dump();
     
     Trie<int> trie;
     trie.insert("GATTACA",42);
     trie.insert("GATTACA",17);
     trie.insert("GATTACA", 42);
-    trie.dump();
+    trie.insert("GATT", 15);
+    trie.insert("GANT", 10);
+//    trie.dump();
     
-    cout << "yes" << endl;
+    vector<int> matches;
+    matches = t.find("ABG", true);
+    for(int i = 0; i < matches.size(); i++){
+        cout << matches[i] << endl;
+    }
+    cout << "finished" << endl;
 }

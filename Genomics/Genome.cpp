@@ -28,6 +28,7 @@ bool GenomeImpl::load(istream& genomeSource, vector<Genome>& genomes)
     if(!genomeSource)
         return false;
     
+    genomes.clear();
     string temp, tempName, tempGenome;
     getline(genomeSource, temp);
     

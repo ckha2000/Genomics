@@ -336,5 +336,22 @@ int main(){
     for(int i = 0; i < matches.size(); i++){
         cout << matches[i] << endl;
     }
+    
+//    const int defaultMinSearchLength = 10;
+//    GenomeMatcher* library = new GenomeMatcher(defaultMinSearchLength);
+//    loadProvidedFiles(library);
+    
+    GenomeMatcher* matcher = new GenomeMatcher(3);
+    Genome g1 = Genome("nm", "ABTGCT");
+    Genome g2 = Genome("nm2", "ABTSD");
+    Genome g3 = Genome("nm3", "GCT");
+    
+    matcher->addGenome(g1);
+    matcher->addGenome(g2);
+    matcher->addGenome(g3);
+    
+    vector<DNAMatch> matches1;
+    matcher->findGenomesWithThisDNA("GCT", 3, true, matches1);
+    
     cout << "finished" << endl;
 }

@@ -121,7 +121,7 @@ std::vector<ValueType> Trie<ValueType>::findHelper(const char key[], bool exactM
     if(curr == nullptr)
         return matches;
     
-    // the label of the current node equals the next key char
+    // the label of the ecurrent node equals the next key char
     if(curr->label == key[0]){
         // if the key char is the last one, add all values in the node to the vector
         if(key[1] == '\0'){

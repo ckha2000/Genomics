@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
+#include <list>
 #include <iostream>
 #include <fstream>
 #include <utility>
@@ -67,7 +69,6 @@ void GenomeMatcherImpl::addGenome(const Genome& genome)
     }
 }
 
-
 bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minimumLength, bool exactMatchOnly, vector<DNAMatch>& matches) const
 {
     // return false for invalid input (lengths lower than minSearchLength)
@@ -83,31 +84,16 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
     if(dnaFragMatches.size() == 0)
         return false;
     
-    // order the dna prefix matches by the genome they come from
-    sort(dnaFragMatches.begin(), dnaFragMatches.end(), &(comparePairByGenome));
+    // need to track: genome id, position in genome, and length of match
+        // genomeMatchInfo - unordered map
+        // maps genome id (the first index) to a list of pairs (position, length)
+        // O(1) to add a pair into a list in the map
     
-    // curGenome stores the position of the genome we are currently searching through
-    int curGenome = dnaFragMatches[0].first;
-    int longestPos = -1;
-    int longest = -1;
-    
+    unordered_map<int, list<pair<int, int>>> genomeMatchInfo;
     matches.clear();
+    
     for(int i = 0; i < dnaFragMatches.size(); i++){
-        // if curGenome and the next fragment's genome are different,
-        // push the longest match (if there is a match) from the previous genome
-        if(curGenome != dnaFragMatches[i].first){
-            if(longest >= minimumLength){
-                DNAMatch m;
-                m.genomeName = m_genomes[curGenome].name();
-                m.length = longest;
-                m.position = longestPos;
-                matches.push_back(m);
-            }
-            
-            curGenome = dnaFragMatches[i].first;
-            longest = -1;
-            longestPos = -1;
-        }
+        int curGenome = dnaFragMatches[i].first;
         
         bool errorsAllowed = !exactMatchOnly;
         int searchLength = fragment.length();
@@ -120,8 +106,8 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
         
         // extract the most DNA bases as possible up to a max of fragment's length
         m_genomes[curGenome].extract(dnaFragMatches[i].second, searchLength, genomeFrag);
-
-        // iterate until fragment and the extracted string aren't equal
+        
+        // loop until fragment and genomeFrag aren't equal
         int curLength = 0;
         while(curLength < searchLength){
             if(fragment[curLength] != genomeFrag[curLength]){
@@ -135,20 +121,42 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
             curLength++;
         }
         
-        // if the current fragment is a match and is longer than the previous match for this genome, update longestPos and longest
-        if(curLength >= minimumLength && curLength > longest){
-            longestPos = dnaFragMatches[i].second;
-            longest = curLength;
-        }
+        // find()'s pair is in the form (genome, position)
+        // genomeMatchInfo's pair is in the form (position, length)
+        pair<int, int> p;
+        p.first = dnaFragMatches[i].second;
+        p.second = curLength;
+        
+        genomeMatchInfo[curGenome].push_back(p);
     }
-    
-    // add the longest match (if there is one) from the last genome
-    if(longest >= minimumLength){
-        DNAMatch m;
-        m.genomeName = m_genomes[curGenome].name();
-        m.length = longest;
-        m.position = longestPos;
-        matches.push_back(m);
+
+    // add all matches to the matches vector
+    for(unordered_map<int, list<pair<int,int>>>::iterator i = genomeMatchInfo.begin();
+        i != genomeMatchInfo.end(); i++){
+        // process the max length and add the longest one
+        
+        int curID = i->first;
+        int longestPos = -1;
+        int longest = 0;
+        
+        for(list<pair<int,int>>::iterator it = genomeMatchInfo[curID].begin(); it != genomeMatchInfo[curID].end(); it++){
+            if(it->second == longest){
+                if(it->first < longestPos){     // pick the earliest position of their lengths are equal
+                    longestPos = it->first;
+                }
+            }else if(it->second > longest){
+                longest = it->second;
+                longestPos = it->first;
+            }
+        }
+        
+        if(longest >= minimumLength){
+            DNAMatch m;
+            m.genomeName = m_genomes[curID].name();
+            m.position = longestPos;
+            m.length = longest;
+            matches.push_back(m);
+        }
     }
     
     if(matches.size() > 0)

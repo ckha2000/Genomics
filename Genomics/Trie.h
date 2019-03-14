@@ -136,8 +136,14 @@ std::vector<ValueType> Trie<ValueType>::findHelper(const char key[], bool exactM
         }
     // if we are not looking for exact matches, call findHelper() on curr's children
     }else if(!exactMatchOnly){
-        for(int i = 0; i < curr->children.size(); i++){
-            findHelper(key+1, false, matches, curr->children[i]);
+        if(key[1] == '\0'){
+            for(int i = 0; i < curr->values.size(); i++){
+                matches.push_back(curr->values[i]);
+            }
+        }else{
+            for(int i = 0; i < curr->children.size(); i++){
+                findHelper(key+1, true, matches, curr->children[i]);
+            }
         }
     }
     return matches;

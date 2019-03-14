@@ -116,6 +116,7 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
             if(fragment[curLength] != genomeFrag[curLength]){
                 if(errorsAllowed){
                     errorsAllowed = false;
+                    continue;
                 }
                 break;
             }

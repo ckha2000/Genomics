@@ -345,13 +345,20 @@ int main(){
     Genome g1 = Genome("nm", "ABTGCT");
     Genome g2 = Genome("nm2", "ABTSD");
     Genome g3 = Genome("nm3", "GCT");
+    Genome g4 = Genome("nm4", "ABAABTG");
     
     matcher->addGenome(g1);
     matcher->addGenome(g2);
     matcher->addGenome(g3);
+    matcher->addGenome(g4);
     
     vector<DNAMatch> matches1;
-    matcher->findGenomesWithThisDNA("GCT", 3, true, matches1);
+//    matcher->findGenomesWithThisDNA("GCG", 3, false, matches1);
+    matcher->findGenomesWithThisDNA("ABAA", 4, false, matches1);
+    
+    for(int i = 0; i < matches1.size(); i++){
+        cout << matches1[i].genomeName << "\t" << matches1[i].position << "\t" << matches1[i].length << endl;
+    }
     
     cout << "finished" << endl;
 }

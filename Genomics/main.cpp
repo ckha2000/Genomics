@@ -257,7 +257,7 @@ void showMenu()
     cout << "         e - find matches exactly           q - quit" << endl;
 }
 
-/*
+
 int main()
 {
     const int defaultMinSearchLength = 10;
@@ -314,9 +314,9 @@ int main()
         }
     }
 }
-*/
 
 
+/*
 int main(){
     Trie<int> t;
     t.insert("ABG", 12);
@@ -333,32 +333,56 @@ int main(){
     
     vector<int> matches;
     matches = t.find("ABG", true);
-    for(int i = 0; i < matches.size(); i++){
-        cout << matches[i] << endl;
-    }
+//    for(int i = 0; i < matches.size(); i++){
+//        cout << matches[i] << endl;
+//    }
     
 //    const int defaultMinSearchLength = 10;
 //    GenomeMatcher* library = new GenomeMatcher(defaultMinSearchLength);
 //    loadProvidedFiles(library);
     
     GenomeMatcher* matcher = new GenomeMatcher(3);
-    Genome g1 = Genome("nm", "ABTGCT");
-    Genome g2 = Genome("nm2", "ABTSD");
-    Genome g3 = Genome("nm3", "GCT");
-    Genome g4 = Genome("nm4", "ABAABTG");
+//    Genome g1 = Genome("nm", "ABTGCT");
+//    Genome g2 = Genome("nm2", "ABTSD");
+//    Genome g3 = Genome("nm3", "GCT");
+//    Genome g4 = Genome("nm4", "ABAABTG");
+//
+//    matcher->addGenome(g1);
+//    matcher->addGenome(g2);
+//    matcher->addGenome(g3);
+//    matcher->addGenome(g4);
     
-    matcher->addGenome(g1);
-    matcher->addGenome(g2);
-    matcher->addGenome(g3);
-    matcher->addGenome(g4);
+    Genome g5 = Genome("Genome 1", "CGGTGTACNACGACTGGGGATAGAATATCTTGACGTCGTACCGGTTGTAGTCGTTCGACCGAAGGGTTCCGCGCCAGTAC");
+    Genome g6 = Genome("Genome 2", "TAACAGAGCGGTNATATTGTTACGAATCACGTGCGAGACTTAGAGCCAGAATATGAAGTAGTGATTCAGCAACCAAGCGG");
+    Genome g7 = Genome("Genome 3", "TTTTGAGCCAGCGACGCGGCTTGCTTAACGAAGCGGAAGAGTAGGTTGGACACATTNGGCGGCACAGCGCTTTTGAGCCA");
+    
+    matcher->addGenome(g5);
+    matcher->addGenome(g6);
+    matcher->addGenome(g7);
     
     vector<DNAMatch> matches1;
 //    matcher->findGenomesWithThisDNA("GCG", 3, false, matches1);
-    matcher->findGenomesWithThisDNA("ABAA", 4, false, matches1);
+//    bool result = matcher->findGenomesWithThisDNA("ABAA", 4, false, matches1);
     
+    bool result;
+//    result = matcher->findGenomesWithThisDNA("GAAG", 4, true, matches1);
+//    result = matcher->findGenomesWithThisDNA("GAATAC", 4, true, matches1);
+//    result = matcher->findGenomesWithThisDNA("GAATAC", 6, true, matches1);
+//    result = matcher->findGenomesWithThisDNA("GAATAC", 6, false, matches1);
+//    result = matcher->findGenomesWithThisDNA("GTATAT", 6, false, matches1);
+//    result = matcher->findGenomesWithThisDNA("GAATACG", 6, false, matches1);
+//    result = matcher->findGenomesWithThisDNA("GAAGGGTT", 5, false, matches1);
+//    result = matcher->findGenomesWithThisDNA("GAAGGGTT", 6, false, matches1);
+//    result = matcher->findGenomesWithThisDNA("ACGTGCGAGACTTAGAGCC", 12, false, matches1);
+//    result = matcher->findGenomesWithThisDNA("ACGTGCGAGACTTAGAGCG", 12, false, matches1);
+//    result = matcher->findGenomesWithThisDNA("GAAG", 2, true, matches1);
+    result = matcher->findGenomesWithThisDNA("GAAG", 5, true, matches1);
+    
+    cout << result << endl;
     for(int i = 0; i < matches1.size(); i++){
         cout << matches1[i].genomeName << "\t" << matches1[i].position << "\t" << matches1[i].length << endl;
     }
     
     cout << "finished" << endl;
 }
+*/

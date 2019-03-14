@@ -1,6 +1,7 @@
 #include "provided.h"
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <utility>
@@ -10,7 +11,19 @@
 using namespace std;
 
 bool comparePairByGenome(pair<int, int> p1, pair<int, int> p2){
+    if(p1.first == p2.first){           // if the genome is the same, order by the position in the genome
+        return p1.second < p2.second;
+    }
+    
     return p1.first < p2.first;         // order by position of genomes in vector
+}
+
+bool compareGenomeMatch(GenomeMatch g1, GenomeMatch g2){
+    if(g1.percentMatch == g2.percentMatch){
+        return g1.genomeName < g2.genomeName;   // if percents are the same, order by name
+    }
+    
+    return g1.percentMatch > g2.percentMatch;   // order by percents in descending order
 }
 
 class GenomeMatcherImpl
@@ -42,6 +55,7 @@ void GenomeMatcherImpl::addGenome(const Genome& genome)
     int pos = m_genomes.size();
     string frag = "";
     
+    
     m_genomes.push_back(genome);
     
     for(int i = 0; i < genome.length() - m_minSearchLength + 1; i++){
@@ -72,10 +86,6 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
     // order the dna prefix matches by the genome they come from
     sort(dnaFragMatches.begin(), dnaFragMatches.end(), &(comparePairByGenome));
     
-//    for(int i = 0; i < dnaFragMatches.size(); i++){
-//        cout << dnaFragMatches[i].first << endl;
-//    }
-    
     // curGenome stores the position of the genome we are currently searching through
     int curGenome = dnaFragMatches[0].first;
     int longestPos = -1;
@@ -95,7 +105,8 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
             }
             
             curGenome = dnaFragMatches[i].first;
-            longestPos = dnaFragMatches[i].second;
+            longest = -1;
+            longestPos = -1;
         }
         
         bool errorsAllowed = !exactMatchOnly;
@@ -111,15 +122,17 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
         m_genomes[curGenome].extract(dnaFragMatches[i].second, searchLength, genomeFrag);
 
         // iterate until fragment and the extracted string aren't equal
-        int curLength;
-        for(curLength = 0; curLength < searchLength; curLength++){
+        int curLength = 0;
+        while(curLength < searchLength){
             if(fragment[curLength] != genomeFrag[curLength]){
                 if(errorsAllowed){
                     errorsAllowed = false;
+                    curLength++;
                     continue;
                 }
                 break;
             }
+            curLength++;
         }
         
         // if the current fragment is a match and is longer than the previous match for this genome, update longestPos and longest
@@ -138,15 +151,50 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
         matches.push_back(m);
     }
     
-    if(matches.size() >= 0){
+    if(matches.size() > 0)
         return true;
-    }
     return false;
 }
 
 bool GenomeMatcherImpl::findRelatedGenomes(const Genome& query, int fragmentMatchLength, bool exactMatchOnly, double matchPercentThreshold, vector<GenomeMatch>& results) const
 {
-    return false;  // This compiles, but may not be correct
+    int numIterations = query.length()/fragmentMatchLength;
+    map<string, int> numMatches;            // use a map to maintain the counts for the number of matches
+    
+    for(int i = 0; i < numIterations; i++){
+        string frag;
+        vector<DNAMatch> matches;
+        
+        query.extract(i*fragmentMatchLength, fragmentMatchLength, frag);
+        findGenomesWithThisDNA(frag, fragmentMatchLength, exactMatchOnly, matches);
+        
+        for(int i = 0; i < matches.size(); i++){
+            // first check if that genome already exists in the map
+            map<string,int>::iterator it = numMatches.find(matches[i].genomeName);
+            if(it == numMatches.end()){
+                numMatches[matches[i].genomeName] = 1;
+            }else{
+                numMatches[matches[i].genomeName]++;
+            }
+        }
+    }
+    
+    results.clear();
+    for(map<string, int>::iterator it = numMatches.begin(); it != numMatches.end(); it++){
+        double percent = (double)(*it).second/numIterations * 100 ; // percent is 0-100
+        if(percent >= matchPercentThreshold){
+            GenomeMatch g;
+            g.genomeName = (*it).first;
+            g.percentMatch = percent;
+            
+            results.push_back(g);
+        }
+    }
+    sort(results.begin(), results.end(), compareGenomeMatch);
+    
+    if(results.size() > 0)
+        return true;
+    return false;
 }
 
 //******************** GenomeMatcher functions ********************************
